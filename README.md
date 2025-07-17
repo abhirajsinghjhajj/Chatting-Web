@@ -14,10 +14,6 @@ A simple real-time web-based chat application using **Node.js**, **Express**, an
 
 ---
 
-## 🖼️ Preview
-
-![Chat App Screenshot](preview.png) <!-- Add your own screenshot in the repo as preview.png -->
-
 ---
 
 ## 📁 Project Structure
