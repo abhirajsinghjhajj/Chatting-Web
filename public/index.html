@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <title>Real-Time Chat</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+
+        .message.system {
+            background: #e9f5ff;
+            color: var(--primary);
+        }
+
+        #userList {
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border-radius: 5px 5px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="userList">Online Users: <span id="users"></span></div>
+        <div id="messages"></div>
+        <form id="form" style="display: none;">
+            <input type="text" id="input" autocomplete="off">
+            <button>Send</button>
+        </form>
+        <div id="login">
+            <input type="text" id="username" placeholder="Enter username">
+            <button onclick="joinChat()">Join Chat</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const messages = document.getElementById('messages');
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const usernameInput = document.getElementById('username');
+
+        function joinChat() {
+            const username = usernameInput.value.trim();
+            if(username) {
+                document.getElementById('login').style.display = 'none';
+                form.style.display = 'flex';
+                socket.emit('joinChat', username);
+            }
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(input.value) {
+                socket.emit('sendMessage', input.value);
+                input.value = '';
+            }
+        });
+
+        socket.on('message', (msg) => {
+            const div = document.createElement('div');
+            div.className = `message ${msg.user === 'System' ? 'system' : ''}`;
+            div.innerHTML = `
+                <strong>${msg.user}</strong>
+                <span>${msg.text}</span>
+                <small>${msg.time}</small>
+            `;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+        socket.on('updateUsers', (users) => {
+            document.getElementById('users').textContent = users.join(', ');
+        });
+    </script>
+</body>
+</html>
